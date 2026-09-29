@@ -1,4 +1,5 @@
 import heapq
+import time
 # 1. CLASS MÔ HÌNH HÓA DÀNH RIÊNG CHO AI (Tối ưu bằng Set và Tuple)
 class SokobanProblem:
     def __init__(self, file_path):
@@ -105,22 +106,48 @@ def calculate_heuristic(state, problem):
         
     return total_h
 # 3. THUẬT TOÁN TÌM KIẾM
-def ucs(problem):
+class SearchStats:
+    """Thống kê tùy chọn để so sánh UCS và A* (Requirement 3).
+    Truyền một đối tượng SearchStats vào ucs()/a_star() để nhận số liệu."""
+    def __init__(self):
+        self.expanded = 0       # số node được lấy ra khỏi frontier và mở rộng
+        self.generated = 0      # số node được đẩy vào frontier
+        self.max_frontier = 0   # kích thước tối đa của frontier
+        self.max_explored = 0   # kích thước tối đa của tập visited
+        self.time_s = 0.0       # thời gian chạy (giây)
+        self.timed_out = False  # True nếu bị dừng vì vượt time_limit
+
+
+def ucs(problem, stats=None, time_limit=None):
     # Queue lưu: (chi_phí_tổng, biến_đếm, trạng_thái_hiện_tại, danh_sách_hành_động)
+    start_time = time.perf_counter()
     frontier = []
-    counter = 0 
+    counter = 0
     heapq.heappush(frontier, (0, counter, problem.start_state, []))
-    
+    if stats:
+        stats.generated = 1
+        stats.max_frontier = 1
+
     visited = set()
 
+    result = (None, 0)  # Không tìm thấy đường
     while frontier:
+        if time_limit is not None and time.perf_counter() - start_time > time_limit:
+            if stats:
+                stats.timed_out = True
+            break
+
         cost, _, current_state, path = heapq.heappop(frontier)
 
         if problem.is_goal(current_state):
-            return path, cost # Trả về list of actions và total cost
+            result = (path, cost)  # list of actions và total cost
+            break
 
         if current_state not in visited:
             visited.add(current_state)
+            if stats:
+                stats.expanded += 1
+                stats.max_explored = max(stats.max_explored, len(visited))
 
             for next_state, action, step_cost in problem.get_successors(current_state):
                 if next_state not in visited:
@@ -128,29 +155,50 @@ def ucs(problem):
                     new_cost = cost + step_cost
                     new_path = path + [action]
                     heapq.heappush(frontier, (new_cost, counter, next_state, new_path))
-                    
-    return None, 0 # Không tìm thấy đường
+                    if stats:
+                        stats.generated += 1
+            if stats:
+                stats.max_frontier = max(stats.max_frontier, len(frontier))
 
-def a_star(problem, heuristic_func):
+    if stats:
+        stats.time_s = time.perf_counter() - start_time
+    return result
+
+
+def a_star(problem, heuristic_func, stats=None, time_limit=None):
+    start_time = time.perf_counter()
     frontier = []
     counter = 0
-    
+
     start_state = problem.start_state
     start_h = heuristic_func(start_state, problem)
-    
+
     # Queue lưu: (f_cost, g_cost, biến_đếm, trạng_thái, danh_sách_hành_động)
     heapq.heappush(frontier, (start_h, 0, counter, start_state, []))
-    
+    if stats:
+        stats.generated = 1
+        stats.max_frontier = 1
+
     visited = set()
 
+    result = (None, 0)  # Không tìm thấy đường
     while frontier:
+        if time_limit is not None and time.perf_counter() - start_time > time_limit:
+            if stats:
+                stats.timed_out = True
+            break
+
         f_cost, g_cost, _, current_state, path = heapq.heappop(frontier)
 
         if problem.is_goal(current_state):
-            return path, g_cost # Trả về list of actions và total cost[cite: 1]
+            result = (path, g_cost)  # list of actions và total cost
+            break
 
         if current_state not in visited:
             visited.add(current_state)
+            if stats:
+                stats.expanded += 1
+                stats.max_explored = max(stats.max_explored, len(visited))
 
             for next_state, action, step_cost in problem.get_successors(current_state):
                 if next_state not in visited:
@@ -159,7 +207,13 @@ def a_star(problem, heuristic_func):
                     new_h = heuristic_func(next_state, problem)
                     new_f = new_g + new_h
                     new_path = path + [action]
-                    
-                    heapq.heappush(frontier, (new_f, new_g, counter, next_state, new_path))
 
-    return None, 0
+                    heapq.heappush(frontier, (new_f, new_g, counter, next_state, new_path))
+                    if stats:
+                        stats.generated += 1
+            if stats:
+                stats.max_frontier = max(stats.max_frontier, len(frontier))
+
+    if stats:
+        stats.time_s = time.perf_counter() - start_time
+    return result
