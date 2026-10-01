@@ -99,7 +99,8 @@ def make_charts(rows):
         ("peak_mem_kb", "Bộ nhớ đỉnh (KB)", "benchmark_memory.png"),
     ]
     # Dùng xám + hatch để in đen trắng vẫn phân biệt được
-    style = {"UCS": dict(color="0.35", hatch="//"), "A*": dict(color="0.8", hatch="..")}
+    colors = {"UCS": "0.35", "A*": "0.8"}
+    hatches = {"UCS": "//", "A*": ".."}
     width = 0.38
     for key, title, fname in metrics:
         fig, ax = plt.subplots(figsize=(8, 4.5))
@@ -109,7 +110,8 @@ def make_charts(rows):
                 r = next(x for x in rows if x["map"] == m and x["algorithm"] == alg)
                 vals.append(max(float(r[key]), 1e-6))
             xs = [k + (i - 0.5) * width for k in range(len(maps))]
-            ax.bar(xs, vals, width, label=alg, edgecolor="black", **style[alg])
+            ax.bar(xs, vals, width, label=alg, edgecolor="black",
+                   color=colors[alg], hatch=hatches[alg])
         ax.set_xticks(range(len(maps)))
         ax.set_xticklabels(maps)
         ax.set_yscale("log")
