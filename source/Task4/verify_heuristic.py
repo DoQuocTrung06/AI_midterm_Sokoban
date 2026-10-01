@@ -2,7 +2,7 @@
 Requirement 4: kiểm chứng bằng thực nghiệm tính admissible và consistent
 của heuristic (calculate_heuristic: Chebyshev + phát hiện deadlock góc).
 
-Chạy:  python experiments/verify_heuristic.py
+Chạy:  python Task4/verify_heuristic.py
 
 Hai chế độ kiểm tra:
 
@@ -28,7 +28,7 @@ sys.path.insert(0, os.path.join(HERE, ".."))
 from algorithms.ucs_astar import SokobanProblem, ucs, calculate_heuristic  # noqa: E402
 
 MAP_DIR = os.path.join(HERE, "..", "maps")
-OUT_DIR = os.path.join(HERE, "..", "results")
+OUT_DIR = os.path.join(HERE, "results")
 INF = float("inf")
 
 
