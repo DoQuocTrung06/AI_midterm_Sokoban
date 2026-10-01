@@ -73,7 +73,7 @@ class SokobanGUI:
     def _load_sprites(self):
         """Tải hình ảnh, co dãn kích thước và cắt xén viền để tránh lỗi hở nét vẽ."""
         base_dir = os.path.dirname(__file__)
-        img_dir = os.path.join(base_dir, "assets", "images")
+        img_dir = os.path.join(base_dir,"..", "assets", "images")
 
         files = {
             'wall': "wall.png",
