@@ -1,8 +1,8 @@
 """
 Requirement 3: so sánh thời gian và không gian của UCS và A*.
 
-Chạy:  python experiments/benchmark.py
-       python experiments/benchmark.py --repeats 3 --timeout 120
+Chạy:  python Task3/benchmark.py
+       python Task3/benchmark.py --repeats 3 --timeout 120
 
 Kết quả lưu trong results/: benchmark.csv, benchmark_table.txt, benchmark_*.png
 """
@@ -18,7 +18,7 @@ from algorithms.ucs_astar import (  # noqa: E402
     SokobanProblem, SearchStats, ucs, a_star, calculate_heuristic)
 
 MAP_DIR = os.path.join(HERE, "..", "maps")
-OUT_DIR = os.path.join(HERE, "..", "results")
+OUT_DIR = os.path.join(HERE, "results")
 
 # Xếp từ dễ đến khó
 DEFAULT_MAPS = ["map_2", "map_3", "example_map"]  # dễ, trung bình, khó
