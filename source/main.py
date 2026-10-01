@@ -8,7 +8,7 @@ if current_dir not in sys.path:
 
 def run_single_player():
     """Run Task 5: Single Player Sokoban GUI (Using UCS and A*)"""
-    from ui_single import SokobanGUI
+    from Task5.ui_single import SokobanGUI
     map_file = os.path.join(current_dir, "maps", "example_map.txt")
     print("=> Running Task 5: Single Player Mode...")
     game = SokobanGUI(map_file)
