@@ -2,7 +2,10 @@ import pygame
 import sys
 import os
 
-from models.board import Board
+sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+
+from board import Board
 from algorithms.ucs_astar import SokobanProblem, ucs, a_star, calculate_heuristic, SearchStats
 
 # Kích thước khung ô cờ và độ rộng viền bao quanh (Tile and layout dimensions)
