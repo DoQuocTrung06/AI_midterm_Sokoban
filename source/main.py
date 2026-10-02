@@ -21,13 +21,13 @@ def run_competitive():
 
 def run_benchmark():
     """Run Task 3: Evaluate and compare time/space performance of UCS vs A*"""
-    # TODO: Dành cho thành viên phụ trách Task 3 tự viết lệnh chạy
-    pass
+    from Task3.benchmark import main
+    main()
 
 def run_verify_heuristic():
     """Run Task 4: Verify Admissible and Consistent properties of Heuristic"""
-    # TODO: Dành cho thành viên phụ trách Task 4 tự viết lệnh chạy
-    pass
+    from Task4.verify_heuristic import main
+    main()
 
 
 if __name__ == "__main__":

@@ -21,7 +21,7 @@ MAP_DIR = os.path.join(HERE, "..", "maps")
 OUT_DIR = os.path.join(HERE, "results")
 
 # Xếp từ dễ đến khó
-DEFAULT_MAPS = ["map_2", "map_3", "example_map"]  # dễ, trung bình, khó
+DEFAULT_MAPS = ["map_easy", "map_medium", "example_map"]  # dễ, trung bình, khó
 
 
 def run_once(problem, algorithm, timeout, measure_memory=False):

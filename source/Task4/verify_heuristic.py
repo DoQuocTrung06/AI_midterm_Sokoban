@@ -168,7 +168,7 @@ def fmt(r):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--exhaustive", nargs="*", default=["map_2", "map_3"])
+    ap.add_argument("--exhaustive", nargs="*", default=["map_easy", "map_medium"])
     ap.add_argument("--sampled", nargs="*", default=["example_map"])
     ap.add_argument("--max-states", type=int, default=600_000)
     ap.add_argument("--bfs-states", type=int, default=100_000)
