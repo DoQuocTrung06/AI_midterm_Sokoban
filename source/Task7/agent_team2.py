@@ -1,14 +1,13 @@
 import time
 import heapq
 import random
-from base_agent import BaseAgent
+from AI_midterm_Sokoban.source.Task7.base_agent import BaseAgent
 
 class AgentTeam2(BaseAgent):
     def __init__(self, player_id=2):
         super().__init__(player_id)
         self.actions = [(0, -1), (0, 1), (-1, 0), (1, 0)]
 
-        # THÊM TRÍ NHỚ CHO BOT
         self.last_pos = None
         self.stuck_count = 0
         
@@ -16,9 +15,6 @@ class AgentTeam2(BaseAgent):
         start_time = time.perf_counter()
         safe_time_limit = (time_limit - 100) / 1000.0
 
-        # ==========================================================
-        # LOGIC CHỐNG KẸT (ANTI-STUCK / DEADLOCK BREAKER)
-        # ==========================================================
         current_pos = state['p1'] if self.player_id == 1 else state['p2']
         
         if self.last_pos == current_pos:
@@ -32,19 +28,14 @@ class AgentTeam2(BaseAgent):
             valid_moves = []
             for dx, dy in self.actions:
                 nr, nc = current_pos[0] + dx, current_pos[1] + dy
-                # Bỏ check 'locked', giờ chỉ cần né tường cứng
                 if (nr, nc) not in state['walls']:
                     valid_moves.append((dx, dy))
                     
             if valid_moves:
                 fallback_action = random.choice(valid_moves)
-                print(f"[P2-Red] BỊ KẸT! Tự động lách sang: {fallback_action}")
                 return fallback_action
-        # ==========================================================
-
         best_action = (0, 0)
         
-        # Iterative Deepening
         for max_depth in range(1, 50):
             action, timeout = self.greedy_search(state, max_depth, start_time, safe_time_limit)
             if action is not None:
@@ -56,13 +47,12 @@ class AgentTeam2(BaseAgent):
 
     def is_corner_deadlock(self, r, c, state):
         if (r, c) in state['goals']: 
-            return False # Bị kẹt nhưng kẹt trên đích thì lại là lợi thế (An toàn tuyệt đối)
+            return False
         wall_v = (r-1, c) in state['walls'] or (r+1, c) in state['walls']
         wall_h = (r, c-1) in state['walls'] or (r, c+1) in state['walls']
         return wall_v and wall_h
 
     def greedy_search(self, start_state, max_depth, start_time, time_limit):
-        # GBFS chỉ lưu h_cost, không cộng thêm g_cost
         frontier = []
         start_pos = start_state['p1'] if self.player_id == 1 else start_state['p2']
         boxes = start_state['boxes']
@@ -126,7 +116,6 @@ class AgentTeam2(BaseAgent):
         return best_a, False
 
     def heuristic(self, pos, boxes, state):
-        # Heuristic đơn giản và hung hăng (Greedy): Tìm thùng gần nhất và đẩy vào đích
         h = 0
         my_boxes = 0
         enemy_boxes = 0
@@ -134,14 +123,13 @@ class AgentTeam2(BaseAgent):
         target_goals = [g for g in state['goals'] if g not in boxes or boxes[g] != self.player_id]
         
         for (r, c), owner in boxes.items():
-            # NẾU ĐẨY VÀO ĐÍCH -> THƯỞNG CỰC LỚN ĐỂ ƯU TIÊN DỨT ĐIỂM!
             if (r, c) in state['goals']:
                 if owner == self.player_id:
-                    h -= 2000  # Thưởng 2000 điểm
+                    h -= 2000
                     my_boxes += 1
-                    continue # Bỏ qua tính khoảng cách bên dưới
+                    continue
                 elif owner != 0:
-                    h += 2000  # Phạt nếu địch đẩy vào đích
+                    h += 2000
                     enemy_boxes += 1
                     
             min_dist_to_goal = min([abs(r - gr) + abs(c - gc) for gr, gc in target_goals], default=0)
