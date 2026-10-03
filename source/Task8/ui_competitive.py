@@ -2,10 +2,15 @@ import pygame
 import sys
 import os
 import time
-import concurrent.futures # <-- THƯ VIỆN ĐA LUỒNG
+import concurrent.futures
 
-from agent_team1 import AgentTeam1
-from agent_team2 import AgentTeam2
+current_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.abspath(os.path.join(current_dir, '..', '..', '..'))
+if root_dir not in sys.path:
+    sys.path.append(root_dir)
+
+from AI_midterm_Sokoban.source.Task7.agent_team1 import AgentTeam1
+from AI_midterm_Sokoban.source.Task7.agent_team2 import AgentTeam2
 
 TILE_SIZE = 48
 PADDING_TILES = 1
@@ -28,8 +33,8 @@ class SokobanCompetitive:
         self.font_large = pygame.font.SysFont("Arial", 28, bold=True)
         self.sprites = self._load_sprites()
         
-        self.agent1 = AgentTeam1(player_id=1) # BLUE
-        self.agent2 = AgentTeam2(player_id=2) # RED
+        self.agent1 = AgentTeam1(player_id=1)
+        self.agent2 = AgentTeam2(player_id=2)
         
         self.score_p1 = 0
         self.score_p2 = 0
@@ -43,11 +48,8 @@ class SokobanCompetitive:
         self.offset_x = PADDING_TILES * TILE_SIZE
         self.offset_y = PADDING_TILES * TILE_SIZE
         
-        # =========================================================
-        # HỆ THỐNG ĐA LUỒNG (TRÁNH ĐƠ GIAO DIỆN)
-        # =========================================================
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
-        self.ai_calculating = False # Trạng thái xem bot có đang nghĩ không
+        self.ai_calculating = False
         self.future_p1 = None
         self.future_p2 = None
 
@@ -58,7 +60,7 @@ class SokobanCompetitive:
         
         self.p1_pos = None
         self.p2_pos = None
-        self.boxes = {} # dict mapping (r, c) -> owner (0: neutral, 1: P1, 2: P2)
+        self.boxes = {}
 
         with open(file_path, 'r', encoding='utf-8') as f:
             lines = f.readlines()
@@ -74,8 +76,6 @@ class SokobanCompetitive:
                 elif char == 'D': self.goals.add((r, c))
                 elif char == 'B': self.boxes[(r, c)] = 0
                 elif char == 'C': 
-                    # Đã bỏ tính năng Khóa, C chỉ đơn giản là thùng (chưa chủ) đang nằm trên Đích
-                    # Hoặc giữ lại tương thích locked_boxes tuỳ phiên bản, ở đây đồng bộ theo bản cướp thùng không khóa
                     self.boxes[(r, c)] = 0
                     self.goals.add((r, c))
 
@@ -97,13 +97,11 @@ class SokobanCompetitive:
         return sprites
 
     def tint_surface(self, surface, color):
-        """Phủ màu xanh/đỏ lên ảnh gốc để phân biệt Player 1 / Player 2"""
         tinted = surface.copy()
         tinted.fill(color, special_flags=pygame.BLEND_MULT)
         return tinted
 
     def get_game_state(self):
-        """Đóng gói State để đưa cho 2 file Agent phân tích"""
         return {
             'p1': self.p1_pos, 'p2': self.p2_pos,
             'boxes': self.boxes.copy(),
@@ -112,7 +110,6 @@ class SokobanCompetitive:
         }
 
     def is_board_deadlocked(self):
-        """Kiểm tra Deadlock: Do thùng không khóa, ta chỉ check với tường cứng"""
         if len(self.boxes) == 0: return False 
             
         for (r, c) in self.boxes.keys():
@@ -137,32 +134,21 @@ class SokobanCompetitive:
         return True
 
     def resolve_simultaneous_moves(self, a1, a2):
-        """
-        Luật giải quyết xung đột (Conflict Resolution):
-        - Nếu 2 agent đi xuyên qua nhau -> Hủy bước.
-        - Nếu 2 agent bước vào cùng 1 ô -> Hủy bước.
-        - Nếu đẩy trùng 1 thùng -> Hủy bước.
-        """
         n_p1 = (self.p1_pos[0] + a1[0], self.p1_pos[1] + a1[1])
         n_p2 = (self.p2_pos[0] + a2[0], self.p2_pos[1] + a2[1])
         
         n_box1, n_box2 = None, None
         pushing_box1, pushing_box2 = False, False
 
-        # Hàm kiểm tra di chuyển cơ bản (Tường)
         def is_valid_basic(pos):
-            return pos not in self.walls # Bỏ locked_boxes
+            return pos not in self.walls
             
         if not is_valid_basic(n_p1): n_p1 = self.p1_pos
         if not is_valid_basic(n_p2): n_p2 = self.p2_pos
 
-        # =========================================================
-        # FIX LỖI ĐẨY THÙNG VÀO NGƯỜI NHAU
-        # =========================================================
         if n_p1 in self.boxes:
             pushing_box1 = True
             n_box1 = (n_p1[0] + a1[0], n_p1[1] + a1[1])
-            # Phải check thêm xem Thùng 1 có đâm vào vị trí hiện tại hoặc tương lai của P2 không
             if not is_valid_basic(n_box1) or n_box1 in self.boxes or n_box1 == self.p2_pos or n_box1 == n_p2:
                 n_p1 = self.p1_pos
                 pushing_box1 = False
@@ -170,20 +156,13 @@ class SokobanCompetitive:
         if n_p2 in self.boxes:
             pushing_box2 = True
             n_box2 = (n_p2[0] + a2[0], n_p2[1] + a2[1])
-            # Phải check thêm xem Thùng 2 có đâm vào vị trí hiện tại hoặc tương lai của P1 không
             if not is_valid_basic(n_box2) or n_box2 in self.boxes or n_box2 == self.p1_pos or n_box2 == n_p1:
                 n_p2 = self.p2_pos
                 pushing_box2 = False
-        # =========================================================      
-         
-        # LUẬT VA CHẠM ĐỒNG THỜI
-        # 1. Đi chéo xuyên nhau
         if n_p1 == self.p2_pos and n_p2 == self.p1_pos:
             n_p1, n_p2 = self.p1_pos, self.p2_pos
-        # 2. Bước vào cùng 1 ô
         if n_p1 == n_p2:
             n_p1, n_p2 = self.p1_pos, self.p2_pos
-        # 3. Một thằng bước vào chỗ thùng thằng kia đang đẩy
         if pushing_box1 and n_p2 == n_p1:
             n_p2 = self.p2_pos
         if pushing_box2 and n_p1 == n_p2:
@@ -192,9 +171,9 @@ class SokobanCompetitive:
         new_boxes = {}
         for (r, c), owner in self.boxes.items():
             if pushing_box1 and (r, c) == n_p1:
-                new_boxes[n_box1] = 1 # Đổi màu thành Bot 1 
+                new_boxes[n_box1] = 1
             elif pushing_box2 and (r, c) == n_p2:
-                new_boxes[n_box2] = 2 # Đổi màu thành Bot 2 
+                new_boxes[n_box2] = 2
             else:
                 new_boxes[(r, c)] = owner
                 
@@ -202,34 +181,27 @@ class SokobanCompetitive:
         self.p1_pos = n_p1
         self.p2_pos = n_p2
 
-        # TÍNH LẠI ĐIỂM TRỰC TIẾP DỰA TRÊN THÙNG NẰM TRÊN ĐÍCH
         self.score_p1 = sum(1 for (r, c), owner in self.boxes.items() if (r, c) in self.goals and owner == 1)
         self.score_p2 = sum(1 for (r, c), owner in self.boxes.items() if (r, c) in self.goals and owner == 2)
         
-        self.current_turn += 1 # Tăng số turn
+        self.current_turn += 1
 
     def update(self):
         if not self.is_paused:
-            # 1. NẾU AI CHƯA NHẬN VIỆC -> QUĂNG VÀO BACKGROUND THREAD
             if not self.ai_calculating:
                 state = self.get_game_state()
                 self.future_p1 = self.executor.submit(self.agent1.get_action, state, 800)
                 self.future_p2 = self.executor.submit(self.agent2.get_action, state, 800)
                 self.ai_calculating = True
                 
-            # 2. NẾU AI ĐANG TÍNH -> KIỂM TRA XEM CẢ HAI ĐÃ TÍNH XONG CHƯA
             else:
                 if self.future_p1.done() and self.future_p2.done():
                     a1 = self.future_p1.result()
                     a2 = self.future_p2.result()
                     
-                    print(f"====== TRỌNG TÀI [TURN {self.current_turn+1}] ======\n P1 đi: {a1} | P2 đi: {a2}\n")
                     self.resolve_simultaneous_moves(a1, a2)
                     self.ai_calculating = False
                     
-                    # ==========================================
-                    # KIỂM TRA ĐIỀU KIỆN KẾT THÚC GAME
-                    # ==========================================
                     is_max_turns = self.current_turn >= self.max_turns
                     is_deadlocked = self.is_board_deadlocked()
                     
@@ -251,7 +223,7 @@ class SokobanCompetitive:
         for event in pygame.event.get():
             if event.type == pygame.QUIT: 
                 self.running = False
-                self.executor.shutdown(wait=False) # Tắt an toàn các thread khi thoát
+                self.executor.shutdown(wait=False)
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     self.is_paused = not self.is_paused
@@ -259,7 +231,6 @@ class SokobanCompetitive:
     def draw(self):
         self.screen.fill(COLOR_BG)
         
-        # Màu nhận diện: Team 1 Xanh biển, Team 2 Đỏ
         COLOR_T1 = (100, 150, 255)
         COLOR_T2 = (255, 100, 100)
 
@@ -279,7 +250,6 @@ class SokobanCompetitive:
             if owner == 2: box_img = self.tint_surface(box_img, COLOR_T2)
             self.screen.blit(box_img, (x, y))
 
-        # Vẽ người chơi
         p1_x, p1_y = self.offset_x + self.p1_pos[1]*TILE_SIZE, self.offset_y + self.p1_pos[0]*TILE_SIZE
         p1_img = self.tint_surface(self.sprites['player'], COLOR_T1)
         self.screen.blit(p1_img, (p1_x, p1_y))
@@ -288,7 +258,6 @@ class SokobanCompetitive:
         p2_img = self.tint_surface(self.sprites['player'], COLOR_T2)
         self.screen.blit(p2_img, (p2_x, p2_y))
 
-        # --- Giao diện bên dưới ---
         info_y = self.screen_height - 80
         pygame.draw.rect(self.screen, (200, 190, 170), (0, info_y, self.screen_width, 80))
         
@@ -297,7 +266,6 @@ class SokobanCompetitive:
         
         txt_turn = self.font.render(f"Turn: {self.current_turn}/{self.max_turns}", True, (10, 10, 10))
         
-        # Nháy text khi AI đang nghĩ hoặc pause
         if self.ai_calculating:
             status_text = "THINKING..."
         elif self.is_paused:
@@ -319,7 +287,7 @@ class SokobanCompetitive:
             self.handle_events()
             self.update()
             self.draw()
-            self.clock.tick(60) # Mượt mà 60 FPS
+            self.clock.tick(60)
         pygame.quit()
 
 if __name__ == "__main__":
