@@ -53,6 +53,10 @@ class SokobanCompetitive:
         self.future_p1 = None
         self.future_p2 = None
 
+        self.history = []
+        self.view_index = 0
+        self._save_state()
+
     def _parse_map(self, file_path):
         self.walls = set()
         self.goals = set()
@@ -78,6 +82,27 @@ class SokobanCompetitive:
                 elif char == 'C': 
                     self.boxes[(r, c)] = 0
                     self.goals.add((r, c))
+    
+    def _save_state(self):
+        state = {
+            'p1_pos': self.p1_pos,
+            'p2_pos': self.p2_pos,
+            'boxes': self.boxes.copy(),
+            'score_p1': self.score_p1,
+            'score_p2': self.score_p2,
+            'current_turn': self.current_turn
+        }
+        self.history.append(state)
+        self.view_index = len(self.history) - 1
+
+    def _load_state(self, index):
+        state = self.history[index]
+        self.p1_pos = state['p1_pos']
+        self.p2_pos = state['p2_pos']
+        self.boxes = state['boxes'].copy()
+        self.score_p1 = state['score_p1']
+        self.score_p2 = state['score_p2']
+        self.current_turn = state['current_turn']
 
     def _load_sprites(self):
         base_dir = os.path.dirname(__file__)
@@ -186,6 +211,8 @@ class SokobanCompetitive:
         
         self.current_turn += 1
 
+        self._save_state()
+
     def update(self):
         if not self.is_paused:
             if not self.ai_calculating:
@@ -219,7 +246,7 @@ class SokobanCompetitive:
                         else: print("🤝 TRẬN ĐẤU HÒA! 🤝")
                         print("="*40 + "\n")
 
-    def handle_events(self):
+def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT: 
                 self.running = False
@@ -227,7 +254,18 @@ class SokobanCompetitive:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     self.is_paused = not self.is_paused
-
+                    if not self.is_paused and self.view_index < len(self.history) - 1:
+                        self.history = self.history[:self.view_index + 1]
+                elif event.key == pygame.K_LEFT:
+                    self.is_paused = True
+                    if self.view_index > 0:
+                        self.view_index -= 1
+                        self._load_state(self.view_index)
+                elif event.key == pygame.K_RIGHT:
+                    self.is_paused = True
+                    if self.view_index < len(self.history) - 1:
+                        self.view_index += 1
+                        self._load_state(self.view_index)
     def draw(self):
         self.screen.fill(COLOR_BG)
         
@@ -269,10 +307,12 @@ class SokobanCompetitive:
         if self.ai_calculating:
             status_text = "THINKING..."
         elif self.is_paused:
-            status_text = "PAUSED (Space to start)"
+            if self.view_index < len(self.history) - 1:
+                status_text = f"REVIEWING: TURN {self.current_turn} (Space to overwrite & resume)"
+            else:
+                status_text = "PAUSED (Space to start)"
         else:
-            status_text = "BATTLE ONGOING"
-            
+            status_text = "BATTLE ONGOING"            
         txt_status = self.font.render(status_text, True, (100, 100, 100))
         
         self.screen.blit(txt_p1, (20, info_y + 20))
