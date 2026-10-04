@@ -1,11 +1,3 @@
-"""
-Requirement 3: so sánh thời gian và không gian của UCS và A*.
-
-Chạy:  python Task3/benchmark.py
-       python Task3/benchmark.py --repeats 3 --timeout 120
-
-Kết quả lưu trong results/: benchmark.csv, benchmark_table.txt, benchmark_*.png
-"""
 import argparse
 import csv
 import os
@@ -14,18 +6,16 @@ import tracemalloc
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, ".."))
-from algorithms.ucs_astar import (  # noqa: E402
+from algorithms.ucs_astar import (
     SokobanProblem, SearchStats, ucs, a_star, calculate_heuristic)
 
 MAP_DIR = os.path.join(HERE, "..", "maps")
 OUT_DIR = os.path.join(HERE, "results")
 
-# Xếp từ dễ đến khó
-DEFAULT_MAPS = ["map_easy", "map_medium", "example_map"]  # dễ, trung bình, khó
+DEFAULT_MAPS = ["map_easy", "map_medium", "example_map"]
 
 
 def run_once(problem, algorithm, timeout, measure_memory=False):
-    """Chạy 1 lần, trả về (path, cost, stats, peak_mem_kb)."""
     stats = SearchStats()
     if measure_memory:
         tracemalloc.start()
@@ -45,14 +35,12 @@ def run_map(name, repeats, timeout):
     problem = SokobanProblem(path_file)
     rows = []
     for algorithm in ("UCS", "A*"):
-        # Đo thời gian: chạy nhiều lần lấy trung bình (không bật tracemalloc vì làm chậm)
         times = []
         for _ in range(repeats):
             path, cost, stats, _ = run_once(problem, algorithm, timeout)
             times.append(stats.time_s)
             if stats.timed_out:
                 break
-        # Đo bộ nhớ: một lượt riêng
         peak = 0.0
         if not stats.timed_out:
             peak = run_once(problem, algorithm, timeout, measure_memory=True)[3]
@@ -98,7 +86,6 @@ def make_charts(rows):
         ("max_frontier", "Kích thước frontier tối đa", "benchmark_frontier.png"),
         ("peak_mem_kb", "Bộ nhớ đỉnh (KB)", "benchmark_memory.png"),
     ]
-    # Dùng xám + hatch để in đen trắng vẫn phân biệt được
     colors = {"UCS": "0.35", "A*": "0.8"}
     hatches = {"UCS": "//", "A*": ".."}
     width = 0.38

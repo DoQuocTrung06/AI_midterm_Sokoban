@@ -1,23 +1,3 @@
-"""
-Requirement 4: kiểm chứng bằng thực nghiệm tính admissible và consistent
-của heuristic (calculate_heuristic: Chebyshev + phát hiện deadlock góc).
-
-Chạy:  python Task4/verify_heuristic.py
-
-Hai chế độ kiểm tra:
-
-A) VÉT CẠN (map nhỏ): liệt kê toàn bộ trạng thái đạt được từ trạng thái đầu,
-   tính chi phí tối ưu thật h*(s) của MỌI trạng thái bằng BFS ngược từ tập
-   trạng thái đích, rồi kiểm tra:
-     - Admissible : h(s) <= h*(s)   (và h(s) = inf  =>  h*(s) = inf)
-     - Consistent : h(s) <= c(s,s') + h(s')  với MỌI cạnh (s -> s')
-
-B) LẤY MẪU (map lớn, không vét cạn được):
-     - Admissible : các trạng thái trên đường đi tối ưu do UCS tìm ra có
-                    h*(s_i) = C* - i chính xác, kiểm tra h(s_i) <= C* - i.
-     - Consistent : duyệt BFS tối đa N trạng thái từ trạng thái đầu và kiểm tra
-                    mọi cạnh phát sinh.
-"""
 import argparse
 import os
 import sys
@@ -25,7 +5,7 @@ from collections import deque, defaultdict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, ".."))
-from algorithms.ucs_astar import SokobanProblem, ucs, calculate_heuristic  # noqa: E402
+from algorithms.ucs_astar import SokobanProblem, ucs, calculate_heuristic
 
 MAP_DIR = os.path.join(HERE, "..", "maps")
 OUT_DIR = os.path.join(HERE, "results")
@@ -36,11 +16,10 @@ def load(name):
     return SokobanProblem(os.path.join(MAP_DIR, f"{name}.txt"))
 
 
-# ---------------------------------------------------------------- A) vét cạn
 def exhaustive_check(name, max_states):
     p = load(name)
     start = p.start_state
-    edges = {}                       # state -> [(next_state, cost)]
+    edges = {}
     queue = deque([start])
     seen = {start}
     while queue:
@@ -54,7 +33,6 @@ def exhaustive_check(name, max_states):
                 seen.add(n)
                 queue.append(n)
 
-    # h* bằng BFS ngược (mọi cạnh có cost 1) từ các trạng thái đích
     reverse = defaultdict(list)
     for s, succ in edges.items():
         for n, c in succ:
@@ -79,7 +57,7 @@ def exhaustive_check(name, max_states):
     for s in edges:
         real = hstar.get(s, INF)
         if h[s] == INF:
-            if real != INF:            # h báo deadlock nhưng thực ra còn giải được
+            if real != INF:
                 sound_viol += 1
         elif real != INF and h[s] > real:
             adm_viol += 1
@@ -107,14 +85,12 @@ def exhaustive_check(name, max_states):
     }
 
 
-# ---------------------------------------------------------------- B) lấy mẫu
 def sampled_check(name, n_bfs, timeout):
     p = load(name)
     path, cost = ucs(p, time_limit=timeout)
     if path is None:
         return {"map": name, "skipped": "UCS không giải được trong thời gian cho phép"}
 
-    # Admissible trên đường đi tối ưu: h*(s_i) = C* - i
     state = p.start_state
     total = cost
     adm_viol, checked = 0, 0
@@ -130,7 +106,6 @@ def sampled_check(name, n_bfs, timeout):
             break
         state = next(n for n, a, _ in p.get_successors(state) if a == action)
 
-    # Consistent trên N trạng thái đầu tiên của BFS
     start = p.start_state
     seen = {start}
     queue = deque([start])
