@@ -266,10 +266,7 @@ class SokobanCompetitive:
                         if self.view_index < len(self.history) - 1:
                             self.view_index += 1
                             self._load_state(self.view_index)
-<<<<<<< Updated upstream
-=======
                             
->>>>>>> Stashed changes
     def draw(self):
         self.screen.fill(COLOR_BG)
         
