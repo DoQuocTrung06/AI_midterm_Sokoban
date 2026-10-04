@@ -246,26 +246,26 @@ class SokobanCompetitive:
                         else: print("🤝 TRẬN ĐẤU HÒA! 🤝")
                         print("="*40 + "\n")
 
-def handle_events(self):
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT: 
-                self.running = False
-                self.executor.shutdown(wait=False)
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    self.is_paused = not self.is_paused
-                    if not self.is_paused and self.view_index < len(self.history) - 1:
-                        self.history = self.history[:self.view_index + 1]
-                elif event.key == pygame.K_LEFT:
-                    self.is_paused = True
-                    if self.view_index > 0:
-                        self.view_index -= 1
-                        self._load_state(self.view_index)
-                elif event.key == pygame.K_RIGHT:
-                    self.is_paused = True
-                    if self.view_index < len(self.history) - 1:
-                        self.view_index += 1
-                        self._load_state(self.view_index)
+    def handle_events(self):
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT: 
+                    self.running = False
+                    self.executor.shutdown(wait=False)
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        self.is_paused = not self.is_paused
+                        if not self.is_paused and self.view_index < len(self.history) - 1:
+                            self.history = self.history[:self.view_index + 1]
+                    elif event.key == pygame.K_LEFT:
+                        self.is_paused = True
+                        if self.view_index > 0:
+                            self.view_index -= 1
+                            self._load_state(self.view_index)
+                    elif event.key == pygame.K_RIGHT:
+                        self.is_paused = True
+                        if self.view_index < len(self.history) - 1:
+                            self.view_index += 1
+                            self._load_state(self.view_index)
     def draw(self):
         self.screen.fill(COLOR_BG)
         
