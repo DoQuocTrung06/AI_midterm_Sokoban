@@ -9,8 +9,8 @@ root_dir = os.path.abspath(os.path.join(current_dir, '..', '..', '..'))
 if root_dir not in sys.path:
     sys.path.append(root_dir)
 
-from AI_midterm_Sokoban.source.Task7.agent_team1 import AgentTeam1
-from AI_midterm_Sokoban.source.Task7.agent_team2 import AgentTeam2
+from Task7.agent_team1 import AgentTeam1
+from Task7.agent_team2 import AgentTeam2
 
 TILE_SIZE = 48
 PADDING_TILES = 1
@@ -56,6 +56,10 @@ class SokobanCompetitive:
         self.history = []
         self.view_index = 0
         self._save_state()
+
+        self.game_over = False
+        self.game_over_reason = ""
+        self.blurred_background = None
 
     def _parse_map(self, file_path):
         self.walls = set()
@@ -184,6 +188,13 @@ class SokobanCompetitive:
             if not is_valid_basic(n_box2) or n_box2 in self.boxes or n_box2 == self.p1_pos or n_box2 == n_p1:
                 n_p2 = self.p2_pos
                 pushing_box2 = False
+                
+        if pushing_box1 and pushing_box2 and n_box1 == n_box2:
+            pushing_box1 = False
+            pushing_box2 = False
+            n_p1 = self.p1_pos
+            n_p2 = self.p2_pos
+
         if n_p1 == self.p2_pos and n_p2 == self.p1_pos:
             n_p1, n_p2 = self.p1_pos, self.p2_pos
         if n_p1 == n_p2:
@@ -214,7 +225,7 @@ class SokobanCompetitive:
         self._save_state()
 
     def update(self):
-        if not self.is_paused:
+        if not self.is_paused and not self.game_over:
             if not self.ai_calculating:
                 state = self.get_game_state()
                 self.future_p1 = self.executor.submit(self.agent1.get_action, state, 800)
@@ -234,12 +245,11 @@ class SokobanCompetitive:
                     
                     if is_max_turns or is_deadlocked:
                         self.is_paused = True
+                        self.game_over = True
+                        self.game_over_reason = "MAX TURNS REACHED" if is_max_turns else "BOARD DEADLOCKED"
+
                         print("\n" + "="*40)
-                        if is_max_turns:
-                            print(f"GAME OVER! THE GAME HAS REACHED ITS MAXIMUM NUMBER OF TURNS: {self.max_turns}.")
-                        elif is_deadlocked:
-                            print("GAME OVER! THE BOARD IS DEADLOCKED.")
-                            
+                        print(f"GAME OVER! {self.game_over_reason}")
                         print(f"FINAL SCORE: P1 ({self.score_p1}) - P2 ({self.score_p2})")
                         if self.score_p1 > self.score_p2: print("PLAYER 1 (BLUE) WINS")
                         elif self.score_p2 > self.score_p1: print("PLAYER 2 (RED) WINS")
@@ -252,20 +262,21 @@ class SokobanCompetitive:
                     self.running = False
                     self.executor.shutdown(wait=False)
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE:
-                        self.is_paused = not self.is_paused
-                        if not self.is_paused and self.view_index < len(self.history) - 1:
-                            self.history = self.history[:self.view_index + 1]
-                    elif event.key == pygame.K_LEFT:
-                        self.is_paused = True
-                        if self.view_index > 0:
-                            self.view_index -= 1
-                            self._load_state(self.view_index)
-                    elif event.key == pygame.K_RIGHT:
-                        self.is_paused = True
-                        if self.view_index < len(self.history) - 1:
-                            self.view_index += 1
-                            self._load_state(self.view_index)
+                    if not self.game_over:
+                        if event.key == pygame.K_SPACE:
+                            self.is_paused = not self.is_paused
+                            if not self.is_paused and self.view_index < len(self.history) - 1:
+                                self.history = self.history[:self.view_index + 1]
+                        elif event.key == pygame.K_LEFT:
+                            self.is_paused = True
+                            if self.view_index > 0:
+                                self.view_index -= 1
+                                self._load_state(self.view_index)
+                        elif event.key == pygame.K_RIGHT:
+                            self.is_paused = True
+                            if self.view_index < len(self.history) - 1:
+                                self.view_index += 1
+                                self._load_state(self.view_index)
                             
     def draw(self):
         self.screen.fill(COLOR_BG)
@@ -305,7 +316,11 @@ class SokobanCompetitive:
         
         txt_turn = self.font.render(f"Turn: {self.current_turn}/{self.max_turns}", True, (10, 10, 10))
         
-        if self.is_paused:
+        if self.game_over:
+            status_text = "GAME OVER"
+        elif self.ai_calculating:
+            status_text = "THINKING..."
+        elif self.is_paused:
             if self.view_index < len(self.history) - 1:
                 status_text = f"REVIEWING: TURN {self.current_turn} (Space to overwrite & resume)"
             else:
@@ -317,7 +332,42 @@ class SokobanCompetitive:
         self.screen.blit(txt_p1, (20, info_y + 20))
         self.screen.blit(txt_p2, (self.screen_width - 180, info_y + 20))
         self.screen.blit(txt_turn, (self.screen_width//2 - 40, info_y + 10))
-        self.screen.blit(txt_status, (self.screen_width//2 - 90, info_y + 40))
+        self.screen.blit(txt_status, (self.screen_width//2 - 130 if self.is_paused else self.screen_width//2 - 90, info_y + 40))
+
+        if self.game_over:
+            if self.blurred_background is None:
+                small = pygame.transform.smoothscale(self.screen, (self.screen_width // 4, self.screen_height // 4))
+                self.blurred_background = pygame.transform.smoothscale(small, (self.screen_width, self.screen_height))
+                
+                overlay = pygame.Surface((self.screen_width, self.screen_height), pygame.SRCALPHA)
+                overlay.fill((0, 0, 0, 160))
+                self.blurred_background.blit(overlay, (0, 0))
+
+            self.screen.blit(self.blurred_background, (0, 0))
+
+            if self.score_p1 > self.score_p2:
+                winner_txt = "PLAYER 1 (BLUE) WINS!"
+                color_win = (100, 150, 255)
+            elif self.score_p2 > self.score_p1:
+                winner_txt = "PLAYER 2 (RED) WINS!"
+                color_win = (255, 100, 100)
+            else:
+                winner_txt = "DRAW!"
+                color_win = (200, 200, 200)
+
+            font_title = pygame.font.SysFont("Arial", 40, bold=True)
+            font_score = pygame.font.SysFont("Arial", 30, bold=True)
+            
+            title_surf = font_title.render("GAME OVER", True, (255, 255, 255))
+            reason_surf = self.font.render(self.game_over_reason, True, (200, 200, 200))
+            score_surf = font_score.render(f"P1: {self.score_p1}   -   P2: {self.score_p2}", True, (255, 255, 255))
+            win_surf = font_title.render(winner_txt, True, color_win)
+            
+            cx, cy = self.screen_width // 2, self.screen_height // 2
+            self.screen.blit(title_surf, (cx - title_surf.get_width()//2, cy - 80))
+            self.screen.blit(reason_surf, (cx - reason_surf.get_width()//2, cy - 30))
+            self.screen.blit(score_surf, (cx - score_surf.get_width()//2, cy + 10))
+            self.screen.blit(win_surf, (cx - win_surf.get_width()//2, cy + 60))
 
         pygame.display.flip()
 
