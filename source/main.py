@@ -23,7 +23,7 @@ def run_verify_heuristic():
 
 
 if __name__ == "__main__":
-    print("================ SOKOBAN AI PROJECT ================\n")
+    print(" SOKOBAN AI PROJECT\n")
     
     # run_single_player()
     
@@ -33,4 +33,4 @@ if __name__ == "__main__":
     
     # run_verify_heuristic()
 
-    print("\n==================================================")
+    print("\n")
