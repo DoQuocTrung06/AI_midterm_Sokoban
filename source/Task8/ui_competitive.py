@@ -241,9 +241,9 @@ class SokobanCompetitive:
                             print("GAME OVER! THE BOARD IS DEADLOCKED.")
                             
                         print(f"FINAL SCORE: P1 ({self.score_p1}) - P2 ({self.score_p2})")
-                        if self.score_p1 > self.score_p2: print("🎉 PLAYER 1 (BLUE) WINS! 🎉")
-                        elif self.score_p2 > self.score_p1: print("🎉 PLAYER 2 (RED) WINS! 🎉")
-                        else: print("🤝 DRAW! 🤝")
+                        if self.score_p1 > self.score_p2: print("PLAYER 1 (BLUE) WINS")
+                        elif self.score_p2 > self.score_p1: print("PLAYER 2 (RED) WINS")
+                        else: print("DRAW")
                         print("="*40 + "\n")
 
     def handle_events(self):
@@ -331,10 +331,8 @@ class SokobanCompetitive:
             self.clock.tick(60)
         pygame.quit()
 
-if __name__ == "__main__":
-    print("==================================================")
-    print("      SOKOBAN COMPETITIVE - BOX STEALING GAME      ")
-    print("==================================================")
+def main():
+    print("SOKOBAN COMPETITIVE - BOX STEALING GAME")
     try:
         n_turns = int(input("Enter the maximum number of turns for the match (e.g., 100): "))
     except ValueError:
@@ -344,3 +342,6 @@ if __name__ == "__main__":
     map_file = os.path.join(os.path.dirname(__file__), "map_2p.txt")
     game = SokobanCompetitive(map_file, max_turns=n_turns)
     game.run()
+
+if __name__ == "__main__":
+    main()
