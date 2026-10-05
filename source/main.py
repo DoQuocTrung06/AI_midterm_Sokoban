@@ -10,7 +10,8 @@ def run_single_player():
     main()
 
 def run_competitive():
-    pass
+    from Task8.ui_competitive import main
+    main()
 
 def run_benchmark():
     from Task3.benchmark import main

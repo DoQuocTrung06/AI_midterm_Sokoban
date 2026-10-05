@@ -27,7 +27,7 @@ class SokobanCompetitive:
         self.screen_width = (self.board_cols + PADDING_TILES * 2) * TILE_SIZE
         self.screen_height = (self.board_rows + PADDING_TILES * 2) * TILE_SIZE + 80
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
-        pygame.display.set_caption("Sokoban - Cướp Thùng (Không Khóa)")
+        pygame.display.set_caption("Sokoban - Box Stealing (No Lock)")
         
         self.font = pygame.font.SysFont("Arial", 18, bold=True)
         self.font_large = pygame.font.SysFont("Arial", 28, bold=True)
@@ -236,14 +236,14 @@ class SokobanCompetitive:
                         self.is_paused = True
                         print("\n" + "="*40)
                         if is_max_turns:
-                            print(f"GAME OVER! ĐÃ HẾT GIỚI HẠN {self.max_turns} BƯỚC.")
+                            print(f"GAME OVER! THE GAME HAS REACHED ITS MAXIMUM NUMBER OF TURNS: {self.max_turns}.")
                         elif is_deadlocked:
-                            print("GAME OVER! BẾ TẮC TOÀN BỘ BÀN CỜ.")
+                            print("GAME OVER! THE BOARD IS DEADLOCKED.")
                             
-                        print(f"TỈ SỐ CHUNG CUỘC: P1 ({self.score_p1}) - P2 ({self.score_p2})")
-                        if self.score_p1 > self.score_p2: print("🎉 NGƯỜI CHƠI 1 (BLUE) THẮNG! 🎉")
-                        elif self.score_p2 > self.score_p1: print("🎉 NGƯỜI CHƠI 2 (RED) THẮNG! 🎉")
-                        else: print("🤝 TRẬN ĐẤU HÒA! 🤝")
+                        print(f"FINAL SCORE: P1 ({self.score_p1}) - P2 ({self.score_p2})")
+                        if self.score_p1 > self.score_p2: print("🎉 PLAYER 1 (BLUE) WINS! 🎉")
+                        elif self.score_p2 > self.score_p1: print("🎉 PLAYER 2 (RED) WINS! 🎉")
+                        else: print("🤝 DRAW! 🤝")
                         print("="*40 + "\n")
 
     def handle_events(self):
@@ -333,12 +333,12 @@ class SokobanCompetitive:
 
 if __name__ == "__main__":
     print("==================================================")
-    print("      SOKOBAN COMPETITIVE - LUẬT CƯỚP THÙNG")
+    print("      SOKOBAN COMPETITIVE - BOX STEALING GAME      ")
     print("==================================================")
     try:
-        n_turns = int(input("Nhập số bước tối đa cho trận đấu (VD: 100): "))
+        n_turns = int(input("Enter the maximum number of turns for the match (e.g., 100): "))
     except ValueError:
-        print("Đầu vào không hợp lệ, dùng mặc định 100 bước.")
+        print("Invalid input, using default 100 turns.")
         n_turns = 100
         
     map_file = os.path.join(os.path.dirname(__file__), "map_2p.txt")
