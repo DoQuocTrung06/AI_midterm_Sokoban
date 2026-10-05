@@ -305,9 +305,7 @@ class SokobanCompetitive:
         
         txt_turn = self.font.render(f"Turn: {self.current_turn}/{self.max_turns}", True, (10, 10, 10))
         
-        if self.ai_calculating:
-            status_text = "THINKING..."
-        elif self.is_paused:
+        if self.is_paused:
             if self.view_index < len(self.history) - 1:
                 status_text = f"REVIEWING: TURN {self.current_turn} (Space to overwrite & resume)"
             else:
