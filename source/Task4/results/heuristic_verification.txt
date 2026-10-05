@@ -1,4 +1,4 @@
-[map_easy] chế độ: vét cạn
+[map_easy] mode: exhaustive
     states: 12176
     edges: 37360
     solvable_states: 4004
@@ -9,7 +9,7 @@
     avg_h_over_hstar: 0.26
     exact_states: 37
 
-[map_medium] chế độ: vét cạn
+[map_medium] mode: exhaustive
     states: 294989
     edges: 925263
     solvable_states: 91367
@@ -20,7 +20,7 @@
     avg_h_over_hstar: 0.193
     exact_states: 46
 
-[example_map] chế độ: lấy mẫu
+[example_map] mode: sampling
     optimal_cost: 34
     path_states_checked: 35
     admissible_violations: 0
@@ -28,4 +28,4 @@
     edges: 202390
     consistency_violations: 0
 
-KẾT LUẬN: không có vi phạm nào -> heuristic admissible và consistent trên tất cả dữ liệu đã kiểm tra.
+CONCLUSION: no violations -> the heuristic is admissible and consistent on all checked data.

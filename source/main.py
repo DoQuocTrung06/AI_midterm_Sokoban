@@ -27,10 +27,10 @@ if __name__ == "__main__":
     
     # run_single_player()
     
-    run_competitive()
+    # run_competitive()
     
-    # run_benchmark()
+    run_benchmark()
     
-    # run_verify_heuristic()
+    run_verify_heuristic()
 
     print("\n")

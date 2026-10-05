@@ -5,7 +5,9 @@ from collections import deque, defaultdict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, ".."))
-from algorithms.ucs_astar import SokobanProblem, ucs, calculate_heuristic
+from Task1.sokoban_problem import SokobanProblem
+from Task2.heuristics import calculate_heuristic
+from Task2.search_algorithms import ucs
 
 MAP_DIR = os.path.join(HERE, "..", "maps")
 OUT_DIR = os.path.join(HERE, "results")
