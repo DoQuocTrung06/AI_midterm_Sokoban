@@ -2,11 +2,15 @@ import pygame
 import sys
 import os
 
-sys.path.insert(0, os.path.dirname(__file__))
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+current_dir = os.path.dirname(os.path.abspath(__file__))
+source_dir = os.path.abspath(os.path.join(current_dir, '..'))
+if source_dir not in sys.path:
+    sys.path.insert(0, source_dir)
 
-from board import Board
-from algorithms.ucs_astar import SokobanProblem, ucs, a_star, calculate_heuristic, SearchStats
+from Task5.board import Board
+from Task1.sokoban_problem import SokobanProblem
+from Task2.search_algorithms import ucs, a_star, SearchStats
+from Task2.heuristics import calculate_heuristic
 
 TILE_SIZE = 48
 PADDING_TILES = 1
