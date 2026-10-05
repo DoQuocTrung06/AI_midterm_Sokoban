@@ -76,15 +76,15 @@ def make_charts(rows):
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
     except ImportError:
-        print("Chưa cài matplotlib -> bỏ qua biểu đồ (pip install matplotlib)")
+        print("matplotlib is not installed -> skipping charts (pip install matplotlib)")
         return
 
     maps = list(dict.fromkeys(r["map"] for r in rows))
     metrics = [
-        ("time_s", "Thời gian chạy (giây)", "benchmark_time.png"),
-        ("expanded", "Số node đã mở rộng", "benchmark_expanded.png"),
-        ("max_frontier", "Kích thước frontier tối đa", "benchmark_frontier.png"),
-        ("peak_mem_kb", "Bộ nhớ đỉnh (KB)", "benchmark_memory.png"),
+        ("time_s", "Running time (s)", "benchmark_time.png"),
+        ("expanded", "Expanded nodes", "benchmark_expanded.png"),
+        ("max_frontier", "Max frontier size", "benchmark_frontier.png"),
+        ("peak_mem_kb", "Peak memory (KB)", "benchmark_memory.png"),
     ]
     colors = {"UCS": "0.35", "A*": "0.8"}
     hatches = {"UCS": "//", "A*": ".."}
@@ -103,7 +103,7 @@ def make_charts(rows):
         ax.set_xticklabels(maps)
         ax.set_yscale("log")
         ax.set_title(title + " (thang log)")
-        ax.set_xlabel("Bản đồ")
+        ax.set_xlabel("Map")
         ax.legend()
         ax.grid(axis="y", linestyle=":", alpha=0.6)
         fig.tight_layout()
@@ -113,7 +113,7 @@ def make_charts(rows):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--maps", nargs="*", default=DEFAULT_MAPS, help="tên file map (không kèm .txt)")
+    ap.add_argument("--maps", nargs="*", default=DEFAULT_MAPS, help="map file names (without .txt)")
     ap.add_argument("--repeats", type=int, default=3)
     ap.add_argument("--timeout", type=float, default=120)
     args = ap.parse_args()
@@ -121,7 +121,7 @@ def main():
     os.makedirs(OUT_DIR, exist_ok=True)
     all_rows = []
     for name in args.maps:
-        print(f"Đang chạy {name} ...", flush=True)
+        print(f"Running {name} ...", flush=True)
         all_rows.extend(run_map(name, args.repeats, args.timeout))
 
     table = print_table(all_rows)
@@ -135,7 +135,7 @@ def main():
         w.writerows(all_rows)
 
     make_charts(all_rows)
-    print(f"\nĐã lưu kết quả vào {os.path.abspath(OUT_DIR)}")
+    print(f"\nResults saved to {os.path.abspath(OUT_DIR)}")
 
 
 if __name__ == "__main__":
