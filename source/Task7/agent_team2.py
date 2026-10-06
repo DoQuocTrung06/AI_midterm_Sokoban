@@ -1,7 +1,7 @@
 import time
 import heapq
 import random
-from AI_midterm_Sokoban.source.Task7.base_agent import BaseAgent
+from Task7.base_agent import BaseAgent
 
 class AgentTeam2(BaseAgent):
     def __init__(self, player_id=2):

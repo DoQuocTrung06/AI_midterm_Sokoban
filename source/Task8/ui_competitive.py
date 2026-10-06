@@ -5,12 +5,12 @@ import time
 import concurrent.futures
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-root_dir = os.path.abspath(os.path.join(current_dir, '..', '..', '..'))
+root_dir = os.path.abspath(os.path.join(current_dir, '..'))
 if root_dir not in sys.path:
     sys.path.append(root_dir)
 
-from AI_midterm_Sokoban.source.Task7.agent_team1 import AgentTeam1
-from AI_midterm_Sokoban.source.Task7.agent_team2 import AgentTeam2
+from Task7.agent_team1 import AgentTeam1
+from Task7.agent_team2 import AgentTeam2
 
 TILE_SIZE = 48
 PADDING_TILES = 1
