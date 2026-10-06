@@ -3,4 +3,4 @@ class BaseAgent:
         self.player_id = player_id
 
     def get_action(self, state, time_limit):
-        raise NotImplementedError("Phải override hàm get_action trong class kế thừa.")
+        raise NotImplementedError("Get action must be implemented in the subclass.")

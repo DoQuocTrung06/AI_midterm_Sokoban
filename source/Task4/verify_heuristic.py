@@ -5,7 +5,9 @@ from collections import deque, defaultdict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, ".."))
-from algorithms.ucs_astar import SokobanProblem, ucs, calculate_heuristic
+from Task1.sokoban_problem import SokobanProblem
+from Task2.heuristics import calculate_heuristic
+from Task2.search_algorithms import ucs
 
 MAP_DIR = os.path.join(HERE, "..", "maps")
 OUT_DIR = os.path.join(HERE, "results")
@@ -29,7 +31,7 @@ def exhaustive_check(name, max_states):
         for n, _ in succ:
             if n not in seen:
                 if len(seen) >= max_states:
-                    return {"map": name, "skipped": f"> {max_states} trạng thái"}
+                    return {"map": name, "skipped": f"> {max_states} states"}
                 seen.add(n)
                 queue.append(n)
 
@@ -71,7 +73,7 @@ def exhaustive_check(name, max_states):
     solvable = sum(1 for s in edges if s in hstar)
     exact = sum(1 for s in edges if s in hstar and h[s] == hstar[s])
     return {
-        "map": name, "mode": "vét cạn", "states": len(edges), "edges": n_edges,
+        "map": name, "mode": "exhaustive", "states": len(edges), "edges": n_edges,
         "solvable_states": solvable,
         "inf_states": sum(1 for s in edges if h[s] == INF),
         "admissible_violations": adm_viol,
@@ -89,7 +91,7 @@ def sampled_check(name, n_bfs, timeout):
     p = load(name)
     path, cost = ucs(p, time_limit=timeout)
     if path is None:
-        return {"map": name, "skipped": "UCS không giải được trong thời gian cho phép"}
+        return {"map": name, "skipped": "UCS did not solve it within the time limit"}
 
     state = p.start_state
     total = cost
@@ -123,7 +125,7 @@ def sampled_check(name, n_bfs, timeout):
                 seen.add(n)
                 queue.append(n)
     return {
-        "map": name, "mode": "lấy mẫu", "optimal_cost": total,
+        "map": name, "mode": "sampling", "optimal_cost": total,
         "path_states_checked": checked, "admissible_violations": adm_viol,
         "states": len(seen), "edges": n_edges, "consistency_violations": cons_viol,
         "worst_adm": worst, "worst_cons": worst_c,
@@ -132,8 +134,8 @@ def sampled_check(name, n_bfs, timeout):
 
 def fmt(r):
     if "skipped" in r:
-        return f"[{r['map']}] bỏ qua: {r['skipped']}"
-    lines = [f"[{r['map']}] chế độ: {r['mode']}"]
+        return f"[{r['map']}] skipped: {r['skipped']}"
+    lines = [f"[{r['map']}] mode: {r['mode']}"]
     for k, v in r.items():
         if k in ("map", "mode") or (k.startswith("worst") and v is None):
             continue
@@ -153,18 +155,18 @@ def main():
     os.makedirs(OUT_DIR, exist_ok=True)
     results = []
     for name in args.exhaustive:
-        print(f"Vét cạn {name} ...", flush=True)
+        print(f"Exhaustive {name} ...", flush=True)
         results.append(exhaustive_check(name, args.max_states))
     for name in args.sampled:
-        print(f"Lấy mẫu {name} ...", flush=True)
+        print(f"Sampling {name} ...", flush=True)
         results.append(sampled_check(name, args.bfs_states, args.timeout))
 
     report = "\n\n".join(fmt(r) for r in results)
     bad = sum(r.get("admissible_violations", 0) + r.get("consistency_violations", 0)
               + r.get("deadlock_soundness_violations", 0) for r in results)
-    report += "\n\n" + ("KẾT LUẬN: không có vi phạm nào -> heuristic admissible và consistent "
-                        "trên tất cả dữ liệu đã kiểm tra."
-                        if bad == 0 else f"KẾT LUẬN: phát hiện {bad} vi phạm, xem chi tiết ở trên.")
+    report += "\n\n" + ("CONCLUSION: no violations -> the heuristic is admissible and consistent "
+                        "on all checked data."
+                        if bad == 0 else f"CONCLUSION: {bad} violations found, see details above.")
     print("\n" + report)
     with open(os.path.join(OUT_DIR, "heuristic_verification.txt"), "w", encoding="utf-8") as f:
         f.write(report + "\n")

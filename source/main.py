@@ -10,7 +10,8 @@ def run_single_player():
     main()
 
 def run_competitive():
-    pass
+    from Task8.ui_competitive import main
+    main()
 
 def run_benchmark():
     from Task3.benchmark import main
@@ -22,14 +23,14 @@ def run_verify_heuristic():
 
 
 if __name__ == "__main__":
-    print("================ SOKOBAN AI PROJECT ================\n")
+    print(" SOKOBAN AI PROJECT\n")
     
     run_single_player()
     
-    # run_competitive()
+    #run_competitive()
     
-    # run_benchmark()
+    #run_benchmark()
     
-    # run_verify_heuristic()
+    #run_verify_heuristic()
 
-    print("\n==================================================")
+    print("\n")
