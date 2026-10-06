@@ -9,8 +9,8 @@ root_dir = os.path.abspath(os.path.join(current_dir, '..', '..', '..'))
 if root_dir not in sys.path:
     sys.path.append(root_dir)
 
-from Task7.agent_team1 import AgentTeam1
-from Task7.agent_team2 import AgentTeam2
+from AI_midterm_Sokoban.source.Task7.agent_team1 import AgentTeam1
+from AI_midterm_Sokoban.source.Task7.agent_team2 import AgentTeam2
 
 TILE_SIZE = 48
 PADDING_TILES = 1
@@ -318,8 +318,6 @@ class SokobanCompetitive:
         
         if self.game_over:
             status_text = "GAME OVER"
-        elif self.ai_calculating:
-            status_text = "THINKING..."
         elif self.is_paused:
             if self.view_index < len(self.history) - 1:
                 status_text = f"REVIEWING: TURN {self.current_turn} (Space to overwrite & resume)"
