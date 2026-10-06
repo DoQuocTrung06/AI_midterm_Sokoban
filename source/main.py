@@ -25,12 +25,12 @@ def run_verify_heuristic():
 if __name__ == "__main__":
     print(" SOKOBAN AI PROJECT\n")
     
-    run_single_player()
+    # run_single_player()
     
-    #run_competitive()
+    # run_competitive()
     
-    #run_benchmark()
+    run_benchmark()
     
-    #run_verify_heuristic()
+    run_verify_heuristic()
 
     print("\n")
